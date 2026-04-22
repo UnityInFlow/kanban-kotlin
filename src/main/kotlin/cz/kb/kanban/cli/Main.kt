@@ -2,6 +2,8 @@ package cz.kb.kanban.cli
 
 import cz.kb.kanban.model.Priority
 import cz.kb.kanban.model.Status
+import cz.kb.kanban.model.displayTitle
+import cz.kb.kanban.model.isOverdue
 import cz.kb.kanban.service.CardService
 
 // SESSION 1 — BLOK 3
@@ -38,12 +40,19 @@ fun main() {
     printBoard(service)
 }
 
-// TODO [S1 B3 — guided]: vylepsit vyvoj — pouzit service.getBoardGrouped() + Status.entries.forEach
-//   Soucasna implementace vypisuje jen ploche seznamy; cil je zobrazit sloupce per status.
 fun printBoard(service: CardService) {
-    service.getAllCards().forEach { card ->
-        // TODO [S1 B2 — independent]: pouzit card.displayTitle() extension fun
-        val overdue = if (card.dueDate != null && card.dueDate.isBefore(java.time.LocalDate.now())) " ⚠️ OVERDUE" else ""
-        println("  [${card.id}] ${card.title} | ${card.status} | ${card.priority}$overdue")
+    val board = service.getBoardGrouped()
+    Status.entries.forEach { status ->
+        val cards = board[status].orEmpty()
+        println("── ${status.label()} (${cards.size}) ──────────────────")
+        if (cards.isEmpty()) {
+            println("  (prazdny sloupec)")
+        } else {
+            cards.forEach { card ->
+                val overdue = if (card.isOverdue()) " ⚠️ OVERDUE" else ""
+                println("  [${card.id}] ${card.displayTitle()}$overdue")
+            }
+        }
+        println()
     }
 }

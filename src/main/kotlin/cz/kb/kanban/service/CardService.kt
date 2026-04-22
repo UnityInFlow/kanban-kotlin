@@ -3,6 +3,7 @@ package cz.kb.kanban.service
 import cz.kb.kanban.model.Card
 import cz.kb.kanban.model.Priority
 import cz.kb.kanban.model.Status
+import cz.kb.kanban.model.isOverdue
 import cz.kb.kanban.repository.CardRepository
 import java.time.LocalDate
 
@@ -15,18 +16,14 @@ class CardService(
 
     fun getAllCards(): List<Card> = repository.findAll()
 
-    // TODO [S1 B3 — guided]: pouzit filter { it.status == status } nad repository.findAll()
     fun getCardsByStatus(status: Status): List<Card> =
-        emptyList()
+        repository.findAll().filter { it.status == status }
 
-    // TODO [S1 B3 — independent]: pouzit filter + extension fun isOverdue()
-    //   repository.findAll().filter { it.isOverdue() }
     fun getOverdueCards(): List<Card> =
-        emptyList()
+        repository.findAll().filter { it.isOverdue() }
 
-    // TODO [S1 B3 — guided]: pouzit groupBy { it.status } nad repository.findAll()
     fun getBoardGrouped(): Map<Status, List<Card>> =
-        emptyMap()
+        repository.findAll().groupBy { it.status }
 
     fun createCard(title: String, priority: Priority, dueDate: LocalDate? = null): Card {
         require(title.isNotBlank()) { "Card title must not be blank" }
