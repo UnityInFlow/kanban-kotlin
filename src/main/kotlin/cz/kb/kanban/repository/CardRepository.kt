@@ -45,7 +45,4 @@ object CardRepository {
     fun delete(id: Long): Boolean = cards.removeIf { it.id == id }
 
     fun clear() { cards.clear(); nextId = 1L }
-
-    // TODO [S1 B4 — stretch]: companion object s factory metodou
-    // companion object { ... }
 }

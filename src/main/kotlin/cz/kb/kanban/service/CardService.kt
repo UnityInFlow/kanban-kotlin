@@ -26,8 +26,9 @@ class CardService(
         repository.findAll().groupBy { it.status }
 
     fun createCard(title: String, priority: Priority, dueDate: LocalDate? = null): Card {
-        require(title.isNotBlank()) { "Card title must not be blank" }
-        return repository.create(title.trim(), priority, dueDate)
+        // Validation lives in the Card.newTodo factory (companion object) — single source of truth.
+        val draft = Card.newTodo(title, priority, dueDate)
+        return repository.create(draft.title, draft.priority, draft.dueDate)
     }
 
     // SESSION 1 VERZE — jednoduchá, hazi exception
