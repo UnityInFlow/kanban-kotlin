@@ -7,6 +7,10 @@ enum class Priority {
     HIGH,
     CRITICAL;
 
-    // TODO [S1 B2 — guided]: doplnit pomoci when expression
-    // fun emoji(): String = when(this) { LOW -> "🟢"  MEDIUM -> "🟡"  HIGH -> "🟠"  CRITICAL -> "🔴" }
+    fun emoji(): String = when (this) {
+        LOW      -> "🟢"
+        MEDIUM   -> "🟡"
+        HIGH     -> "🟠"
+        CRITICAL -> "🔴"
+    }
 }

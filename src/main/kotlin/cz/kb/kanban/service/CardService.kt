@@ -29,9 +29,8 @@ class CardService(
         emptyMap()
 
     fun createCard(title: String, priority: Priority, dueDate: LocalDate? = null): Card {
-        // TODO [S1 B1 — guided]: validace — co kdyz je title prazdny?
-        // Zatim bez validace — validaci pridame v S2
-        return repository.create(title, priority, dueDate)
+        require(title.isNotBlank()) { "Card title must not be blank" }
+        return repository.create(title.trim(), priority, dueDate)
     }
 
     // SESSION 1 VERZE — jednoduchá, hazi exception
