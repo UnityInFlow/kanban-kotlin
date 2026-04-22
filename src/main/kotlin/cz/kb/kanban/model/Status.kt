@@ -1,14 +1,17 @@
 package cz.kb.kanban.model
 
 // SESSION 1 — BLOK 1
-// TODO: Prozkoumej enum class v Kotlinu vs Java enum
-// Co umi navic? (properties, metody, when exhaustive)
+// Enum class — konecna mnozina hodnot, exhaustive `when`, muze mit metody a vlastnosti.
 enum class Status {
     TODO,
     IN_PROGRESS,
     REVIEW,
     DONE;
 
-    // TODO [S1 B2 — stretch]: pridat fun label(): String pres when expression
-    // fun label(): String = when(this) { ... }
+    fun label(): String = when (this) {
+        TODO        -> "Ceka"
+        IN_PROGRESS -> "V prubehu"
+        REVIEW      -> "Ke kontrole"
+        DONE        -> "Hotovo"
+    }
 }

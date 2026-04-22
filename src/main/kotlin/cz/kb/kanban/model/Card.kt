@@ -15,10 +15,34 @@ data class Card(
     val priority: Priority,
     val dueDate: LocalDate?,        // nullable — proc? co se stane kdyz dam LocalDate bez ??
     val description: String = "",   // default value — jak to nahrazuje method overloading?
-)
+) {
+    companion object {
+        // Factory for a brand-new card — always TODO, id assigned by the repository (0 = unsaved).
+        // Use this instead of the primary constructor when building a card from user input.
+        fun newTodo(
+            title: String,
+            priority: Priority,
+            dueDate: LocalDate? = null,
+            description: String = "",
+        ): Card {
+            require(title.isNotBlank()) { "Card title must not be blank" }
+            return Card(
+                id = 0,
+                title = title.trim(),
+                status = Status.TODO,
+                priority = priority,
+                dueDate = dueDate,
+                description = description,
+            )
+        }
+    }
+}
 
-// TODO [S1 B2 — guided]: extension function isOverdue()
-// fun Card.isOverdue(): Boolean = ???
+// Extension functions — Kotlin way to add behaviour without inheritance.
+// Resolved statically at call site; does not modify the class bytecode.
 
-// TODO [S1 B2 — stretch]: extension function displayTitle() vracejici "[CRITICAL] Setup CI 🔴"
-// fun Card.displayTitle(): String = ???
+fun Card.isOverdue(): Boolean =
+    dueDate?.isBefore(LocalDate.now()) == true && status != Status.DONE
+
+fun Card.displayTitle(): String =
+    "[${priority.name}] $title ${priority.emoji()}"
