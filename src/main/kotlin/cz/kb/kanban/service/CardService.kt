@@ -60,13 +60,24 @@ class CardService(
 
     // Business-safe variant of moveCard — returns every possible outcome as a sealed-interface
     // value instead of throwing. Caller must exhaustively match via `when`.
-    fun moveCardSafe(cardId: Long, to: Status): CardResult {
-        val card = repository.findById(cardId)
-            ?: return CardResult.NotFound(cardId)
-        if (!canTransition(card.status, to)) {
-            return CardResult.InvalidTransition(card.status, to)
-        }
-        return CardResult.Success(repository.save(card.copy(status = to)))
+    //
+    // Scope-function usage:
+    //   - `?.let { card -> ... } ?: CardResult.NotFound` — null check + transform in one expression.
+    //   - `.also { auditLog(it) }` — side effect without breaking the chain; returns the receiver.
+    fun moveCardSafe(cardId: Long, to: Status): CardResult =
+        repository.findById(cardId)?.let { card ->
+            if (canTransition(card.status, to)) {
+                repository.save(card.copy(status = to))
+                    .also { auditLog("moved card ${it.id}: ${card.status} -> ${to}") }
+                    .let(CardResult::Success)
+            } else {
+                CardResult.InvalidTransition(card.status, to)
+            }
+        } ?: CardResult.NotFound(cardId)
+
+    private fun auditLog(message: String) {
+        // Minimal stand-in for a real logger — teaches `also` without dragging in slf4j.
+        println("[audit] $message")
     }
 
     private fun canTransition(from: Status, to: Status): Boolean =
