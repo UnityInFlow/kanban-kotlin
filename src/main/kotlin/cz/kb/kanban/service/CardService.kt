@@ -47,16 +47,16 @@ class CardService(
 
     fun deleteCard(id: Long): Boolean = repository.delete(id)
 
-    // TODO [S1 B2 — guided]: implementovat validaci prechodu pres when expression
-    // Povolene prechody:
-    //   TODO        -> IN_PROGRESS
-    //   IN_PROGRESS -> REVIEW
-    //   REVIEW      -> DONE, IN_PROGRESS
-    //   DONE        -> (zadne)
-    // Pri nepovolenem prechodu hoz IllegalStateException("Invalid transition: $from -> $to").
-    // Zatim povolujeme vse — pridej when expression a vynutit povolene prechody.
     private fun validateTransition(from: Status, to: Status) {
-        // intentionally empty — implement in S1 B2
+        val allowed = when (from) {
+            Status.TODO        -> setOf(Status.IN_PROGRESS)
+            Status.IN_PROGRESS -> setOf(Status.REVIEW)
+            Status.REVIEW      -> setOf(Status.DONE, Status.IN_PROGRESS)
+            Status.DONE        -> emptySet()
+        }
+        if (to !in allowed) {
+            throw IllegalStateException("Invalid transition: $from -> $to")
+        }
     }
 
     // ─────────────────────────────────────────────────

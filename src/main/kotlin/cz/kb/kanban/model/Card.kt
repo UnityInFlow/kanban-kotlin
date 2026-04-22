@@ -17,8 +17,11 @@ data class Card(
     val description: String = "",   // default value — jak to nahrazuje method overloading?
 )
 
-// TODO [S1 B2 — guided]: extension function isOverdue()
-// fun Card.isOverdue(): Boolean = ???
+// Extension functions — Kotlin way to add behaviour without inheritance.
+// Resolved statically at call site; does not modify the class bytecode.
 
-// TODO [S1 B2 — stretch]: extension function displayTitle() vracejici "[CRITICAL] Setup CI 🔴"
-// fun Card.displayTitle(): String = ???
+fun Card.isOverdue(): Boolean =
+    dueDate?.isBefore(LocalDate.now()) == true && status != Status.DONE
+
+fun Card.displayTitle(): String =
+    "[${priority.name}] $title ${priority.emoji()}"
