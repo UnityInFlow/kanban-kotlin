@@ -18,10 +18,9 @@ fun main() {
     println("╚══════════════════════════════════════╝")
     println()
 
-    // TODO [S1 B3 — guided]: zobrazit board groupBy status
     printBoard(service)
+    printReport(service)
 
-    println()
     println("--- Demo operace ---")
 
     // Vytvorit novou kartu
