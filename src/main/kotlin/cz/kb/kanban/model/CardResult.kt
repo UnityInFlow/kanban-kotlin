@@ -1,25 +1,16 @@
 package cz.kb.kanban.model
 
-// SESSION 2 — BLOK 1
-// Tento soubor je zatim prazdny — vyplnime ho v Session 2.
+// Sealed interface — the Kotlin way to model a closed set of possible outcomes.
+// Why prefer this over thrown exceptions for business failures?
+//  - Caller sees every possible outcome in the return type signature.
+//  - Compiler enforces exhaustive handling via `when`.
+//  - Each variant carries its own payload (NotFound has an id, InvalidTransition has from/to).
 //
-// MOTIVACE (ukazeme v S2 B1 pred napsanim):
-//   Proc nechceme tohle:
-//
-//   fun moveCard(card: Card, to: Status): Card {
-//       if (card.status == Status.DONE) throw IllegalStateException("Card is already done!")
-//       if (to == Status.TODO) throw IllegalArgumentException("Cannot move back to TODO!")
-//       return card.copy(status = to)
-//   }
-//
-//   Problem: caller nevi ze funkce muze vyhodit exception.
-//   Reseni: sealed interface jako explicitni return typ.
-
-// TODO [S2 B1 — guided]: vytvorit sealed interface CardResult
-//
-// sealed interface CardResult {
-//     data class Success(val card: Card) : CardResult
-//     data class NotFound(val id: Long) : CardResult
-//     data class InvalidTransition(val from: Status, val to: Status) : CardResult
-//     data class ValidationError(val message: String) : CardResult
-// }
+// Java 17+ analogue: `sealed interface` + permits clause.
+// C# analogue: discriminated union (not yet first-class in the language — usually emulated).
+sealed interface CardResult {
+    data class Success(val card: Card) : CardResult
+    data class NotFound(val id: Long) : CardResult
+    data class InvalidTransition(val from: Status, val to: Status) : CardResult
+    data class ValidationError(val message: String) : CardResult
+}

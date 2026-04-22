@@ -1,5 +1,6 @@
 package cz.kb.kanban.cli
 
+import cz.kb.kanban.model.CardResult
 import cz.kb.kanban.model.Priority
 import cz.kb.kanban.model.Status
 import cz.kb.kanban.model.displayTitle
@@ -27,13 +28,12 @@ fun main() {
     val newCard = service.createCard("Implement login", Priority.HIGH)
     println("Vytvorena karta: $newCard")
 
-    // Presunout kartu
-    try {
-        val moved = service.moveCard(newCard.id, Status.IN_PROGRESS)
-        println("Karta presunuta: ${moved.status}")
-    } catch (e: IllegalStateException) {
-        // TODO [S2 B1]: toto try/catch nahradime za when(CardResult) { }
-        println("Chyba prechodu: ${e.message}")
+    // Presunout kartu — exhaustive `when` na sealed interface nahrazuje try/catch.
+    when (val result = service.moveCardSafe(newCard.id, Status.IN_PROGRESS)) {
+        is CardResult.Success           -> println("Karta presunuta: ${result.card.status.label()}")
+        is CardResult.NotFound          -> println("Karta ${result.id} nenalezena")
+        is CardResult.InvalidTransition -> println("Nepovoleny prechod: ${result.from.label()} -> ${result.to.label()}")
+        is CardResult.ValidationError   -> println("Chyba validace: ${result.message}")
     }
 
     println()

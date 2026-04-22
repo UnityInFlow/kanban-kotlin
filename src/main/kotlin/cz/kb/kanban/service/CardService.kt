@@ -1,6 +1,7 @@
 package cz.kb.kanban.service
 
 import cz.kb.kanban.model.Card
+import cz.kb.kanban.model.CardResult
 import cz.kb.kanban.model.Priority
 import cz.kb.kanban.model.Status
 import cz.kb.kanban.model.isOverdue
@@ -57,14 +58,22 @@ class CardService(
         }
     }
 
-    // ─────────────────────────────────────────────────
-    // SESSION 2 — BLOK 1: nahradit moveCard() za verzi
-    // ktera vraci CardResult misto throw exception
-    // ─────────────────────────────────────────────────
+    // Business-safe variant of moveCard — returns every possible outcome as a sealed-interface
+    // value instead of throwing. Caller must exhaustively match via `when`.
+    fun moveCardSafe(cardId: Long, to: Status): CardResult {
+        val card = repository.findById(cardId)
+            ?: return CardResult.NotFound(cardId)
+        if (!canTransition(card.status, to)) {
+            return CardResult.InvalidTransition(card.status, to)
+        }
+        return CardResult.Success(repository.save(card.copy(status = to)))
+    }
 
-    // TODO [S2 B1 — guided]: implementovat moveCardSafe() vracejici CardResult
-    // fun moveCardSafe(cardId: Long, to: Status): CardResult { ... }
-
-    // TODO [S2 B2 — independent]: pouzit let pro null check misto elvis throw
-    // repository.findById(cardId)?.let { ... } ?: CardResult.NotFound(cardId)
+    private fun canTransition(from: Status, to: Status): Boolean =
+        to in when (from) {
+            Status.TODO        -> setOf(Status.IN_PROGRESS)
+            Status.IN_PROGRESS -> setOf(Status.REVIEW)
+            Status.REVIEW      -> setOf(Status.DONE, Status.IN_PROGRESS)
+            Status.DONE        -> emptySet()
+        }
 }
