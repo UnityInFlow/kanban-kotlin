@@ -5,10 +5,9 @@ import cz.kb.kanban.model.Priority
 import cz.kb.kanban.model.Status
 import java.time.LocalDate
 
-// SESSION 1 — BLOK 4
-// object = singleton v Kotlinu
-// Porovnej: Java static class / C# static class
-object CardRepository {
+// `object` = singleton in Kotlin. Implements the generic Repository<Card, Long> contract from S2.
+// Java/C# analogue: class with private constructor + static INSTANCE / static members.
+object CardRepository : Repository<Card, Long> {
 
     // DISCUSS [S1 B1]: proc mutableListOf a ne listOf? (Kotlin rozlisuje read-only vs mutable)
     private val cards: MutableList<Card> = mutableListOf(
@@ -20,29 +19,27 @@ object CardRepository {
 
     private var nextId: Long = 5L
 
-    fun findAll(): List<Card> = cards.toList()
+    override fun findAll(): List<Card> = cards.toList()
 
-    fun findById(id: Long): Card? = cards.find { it.id == id }
+    override fun findById(id: Long): Card? = cards.find { it.id == id }
 
-    fun save(card: Card): Card {
-        cards.removeIf { it.id == card.id }
-        cards.add(card)
-        return card
+    override fun save(entity: Card): Card {
+        cards.removeIf { it.id == entity.id }
+        cards.add(entity)
+        return entity
     }
 
-    fun create(title: String, priority: Priority, dueDate: LocalDate? = null): Card {
-        val card = Card(
+    override fun delete(id: Long): Boolean = cards.removeIf { it.id == id }
+
+    // Domain helper beyond the generic contract — assigns the next id and defaults status to TODO.
+    fun create(title: String, priority: Priority, dueDate: LocalDate? = null): Card =
+        Card(
             id = nextId++,
             title = title,
             status = Status.TODO,
             priority = priority,
             dueDate = dueDate,
-        )
-        cards.add(card)
-        return card
-    }
-
-    fun delete(id: Long): Boolean = cards.removeIf { it.id == id }
+        ).also { cards.add(it) }
 
     fun clear() { cards.clear(); nextId = 1L }
 }

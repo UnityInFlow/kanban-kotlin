@@ -1,6 +1,7 @@
 package cz.kb.kanban.service
 
 import cz.kb.kanban.model.Card
+import cz.kb.kanban.model.CardResult
 import cz.kb.kanban.model.Priority
 import cz.kb.kanban.model.Status
 import cz.kb.kanban.model.isOverdue
@@ -57,14 +58,33 @@ class CardService(
         }
     }
 
-    // ─────────────────────────────────────────────────
-    // SESSION 2 — BLOK 1: nahradit moveCard() za verzi
-    // ktera vraci CardResult misto throw exception
-    // ─────────────────────────────────────────────────
+    // Business-safe variant of moveCard — returns every possible outcome as a sealed-interface
+    // value instead of throwing. Caller must exhaustively match via `when`.
+    //
+    // Scope-function usage:
+    //   - `?.let { card -> ... } ?: CardResult.NotFound` — null check + transform in one expression.
+    //   - `.also { auditLog(it) }` — side effect without breaking the chain; returns the receiver.
+    fun moveCardSafe(cardId: Long, to: Status): CardResult =
+        repository.findById(cardId)?.let { card ->
+            if (canTransition(card.status, to)) {
+                repository.save(card.copy(status = to))
+                    .also { auditLog("moved card ${it.id}: ${card.status} -> ${to}") }
+                    .let(CardResult::Success)
+            } else {
+                CardResult.InvalidTransition(card.status, to)
+            }
+        } ?: CardResult.NotFound(cardId)
 
-    // TODO [S2 B1 — guided]: implementovat moveCardSafe() vracejici CardResult
-    // fun moveCardSafe(cardId: Long, to: Status): CardResult { ... }
+    private fun auditLog(message: String) {
+        // Minimal stand-in for a real logger — teaches `also` without dragging in slf4j.
+        println("[audit] $message")
+    }
 
-    // TODO [S2 B2 — independent]: pouzit let pro null check misto elvis throw
-    // repository.findById(cardId)?.let { ... } ?: CardResult.NotFound(cardId)
+    private fun canTransition(from: Status, to: Status): Boolean =
+        to in when (from) {
+            Status.TODO        -> setOf(Status.IN_PROGRESS)
+            Status.IN_PROGRESS -> setOf(Status.REVIEW)
+            Status.REVIEW      -> setOf(Status.DONE, Status.IN_PROGRESS)
+            Status.DONE        -> emptySet()
+        }
 }
