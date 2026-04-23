@@ -62,7 +62,6 @@ sealed interface CardResult {
     data class InvalidTransition(
         val from: Status,
         val to: Status,
-        val allowed: Set<Status>,
     ) : CardResult
     data class ValidationError(val message: String) : CardResult
 }
@@ -81,7 +80,7 @@ fun moveCardSafe(cardId: Long, to: Status): CardResult {
     }
 
     if (to !in allowed) {
-        return CardResult.InvalidTransition(card.status, to, allowed)
+        return CardResult.InvalidTransition(card.status, to)
     }
 
     val updated = repository.save(card.copy(status = to))
@@ -101,7 +100,7 @@ when (result) {
     is CardResult.NotFound ->
         println("❌ Karta ${result.id} nenalezena")
     is CardResult.InvalidTransition ->
-        println("⚠️ Nelze presunout: ${result.from} -> ${result.to}. Povolene: ${result.allowed}")
+        println("⚠️ Nelze presunout: ${result.from} -> ${result.to}")
     is CardResult.ValidationError ->
         println("❌ Validace: ${result.message}")
 }
@@ -199,7 +198,7 @@ fun moveCardSafe(cardId: Long, to: Status): CardResult =
         ?.let { card ->
             val allowed = allowedTransitions(card.status)
             if (to !in allowed) {
-                CardResult.InvalidTransition(card.status, to, allowed)
+                CardResult.InvalidTransition(card.status, to)
             } else {
                 CardResult.Success(repository.save(card.copy(status = to)))
             }
@@ -414,7 +413,7 @@ Overen ze funguje:
 ✅ Invalid prechod (napr. TODO -> DONE) vraci InvalidTransition
 ✅ Neexistujici karta vraci NotFound
 
-Pokud neco nefunguje, pouzij: git checkout session-2-end
+Pokud neco nefunguje, pouzij: git checkout session-2-done
 ```
 
 **Stretch — mini DSL:**

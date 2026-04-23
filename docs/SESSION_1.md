@@ -338,7 +338,9 @@ pres kotlin-spring plugin — bez 'open' by Spring nemohl vytvaret proxy.
 ## Tipy pro lektora
 
 - **Cas na blok je 60 minut — drz ho.**
-- Kdyz nekdo uvazne: checkout `git tag session-1-blockN-start`
+- Kdyz nekdo uvazne mid-blok: `git stash && git checkout session-1-done -- <konkretni/soubor>` nacte reseni jednoho souboru.
+- Kdyz je mimo uplne: `git stash && git checkout session-1-done` a pokracuje s hotovou verzi.
+  (Dostupne tagy: `session-1-start`, `session-1-done` ≡ `session-2-start`, `session-2-done`. Granularnejsi per-block tagy nejsou — block commity jsou v `git log session-1-start..session-1-done --oneline`.)
 - C# devs: zduraznuj ze `?.` je jejich `?.` a `?:` je jejich `??`
 - Java devs: zduraznuj ze `.filter { }` nepotrebuje `.stream()` a `.collect()`
 - Nikdy nerikej "to je jednoduche" — pro nekoho to jednoduche neni
