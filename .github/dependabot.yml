@@ -1,4 +1,9 @@
 version: 2
+# Workshop repo policy: automated minor + patch updates only.
+# Major version bumps (Kotlin 2.x, Maven plugins 4.x, actions@v6) would change teaching
+# surfaces — participants would hit issues unrelated to the workshop content.
+# Major bumps, when needed, go through a hand-crafted PR with doc updates.
+
 updates:
   - package-ecosystem: maven
     directory: "/"
@@ -7,6 +12,9 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - dependencies
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"
@@ -15,3 +23,6 @@ updates:
     labels:
       - dependencies
       - ci
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
